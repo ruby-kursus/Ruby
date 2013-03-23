@@ -1,5 +1,4 @@
 class Store
-  @@items_in_store_as_array = []
   @@items_in_store = []
   @@categories = []
      @searchResults = []
@@ -9,21 +8,21 @@ class Store
      @total_sale = 0
    end
  
-   def items_in_store_as_array
-     @@items_in_store_as_array
+   def items_in_store
+     @@items_in_store
    end
 
   def items_sorted_by(indic, que)
      if (que.to_s == "asc")
-        @@items_in_store_as_array.sort { |a,b| a[indic] <=> b[indic]} 
+        @@items_in_store.sort { |a,b| a[indic] <=> b[indic]} 
      else
-        @@items_in_store_as_array.sort { |a,b| b[indic] <=> a[indic]}
+        @@items_in_store.sort { |a,b| b[indic] <=> a[indic]}
      end
   end        
 
   def unique_articles_in_category(cat = 'Clothing')
      unique_articles = []
-     @@items_in_store_as_array.each do |itemm|
+     @@items_in_store.each do |itemm|
          if (itemm[:category] == cat)
            unique_articles.push(itemm[:name]) if !unique_articles.include? itemm[:name]
          end
@@ -38,7 +37,7 @@ class Store
   def search(args = {}) 
      @searchResults = []
      @searchResults.clear
-     searchArr = @@items_in_store_as_array
+     searchArr = @@items_in_store
      searchArr.each do |itemm|
          c = compare(args, itemm)
          @searchResults.push(itemm) if c && (!@searchResults.include? itemm)
@@ -78,14 +77,12 @@ class Store
      require "json"
      massiiv = JSON.parse(IO.read(filename) )
      #lisab poe massiivi uue asja
-     @@items_in_store_as_array = []
+     @@items_in_store = []
      massiiv.each do |asi|
         #muuda stringilised võtmed objektideks
         asi = asi.each_with_object({}){|(k,v), h| h[k.to_sym] = v}
-        @@items_in_store_as_array << asi
-        uusasi = Item.new(asi)
-        @@items_in_store << uusasi
-        @@categories << uusasi.category if !@@categories.include? uusasi.category
+        @@items_in_store << asi
+        @@categories << asi.category if !@@categories.include? asi.category
      end
   end
 #last in class Store
@@ -101,7 +98,7 @@ class Store
 
     def add_item(asi, kogusSoovitud=1)
      i=0
-     storeItems = @store.items_in_store_as_array
+     storeItems = @store.items_in_store
      thisItem = (@store.search(asi)).first
      storeIndex = storeItems.index(thisItem)
      kogusPoes = thisItem.in_store
@@ -109,8 +106,8 @@ class Store
      while i < kogus
        @items.push(asi)
        i += 1
-       @store.items_in_store_as_array[storeIndex][:in_store] -= 1
-       @store.total_sale = (@store.total_sale + @store.items_in_store_as_array[storeIndex].price).round(2)
+       @store.items_in_store[storeIndex][:in_store] -= 1
+       @store.total_sale = (@store.total_sale + @store.items_in_store[storeIndex].price).round(2)
      end
      @unique_items.push(asi) if !@unique_items.include? asi
     end
@@ -154,20 +151,4 @@ class Hash
   def category
     self[:category]
   end
-end
-
-
-#38
-class Item
-    attr_accessor :name, :category, :color, :size, :price, :in_store
-#41
-    def initialize(options = {})
-      @name = options[:name]
-      @category = options[:category]
-      @color = options[:color]
-      @size = options[:size]
-      @price = options[:price]
-      @in_store = options[:in_store]
-    end 
-#50
 end
